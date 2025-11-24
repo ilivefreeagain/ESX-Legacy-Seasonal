@@ -43,21 +43,6 @@ function ChristmasClientManager:_logDebug(message)
 end
 
 ---@private
----@param modelHash integer
-local function loadModel(modelHash)
-  if modelHash == 0 then
-    return
-  end
-
-  if not HasModelLoaded(modelHash) then
-    RequestModel(modelHash)
-    while not HasModelLoaded(modelHash) do
-      Wait(0)
-    end
-  end
-end
-
----@private
 ---@param entity integer|nil
 local function safeDeleteEntity(entity)
   if entity and entity ~= 0 and DoesEntityExist(entity) then
@@ -129,7 +114,8 @@ function ChristmasClientManager:SpawnLocation(locationData)
 
   if location.landmarkCoords and location.landmarkModel and location.landmarkModel ~= "" then
     local modelHash = GetHashKey(location.landmarkModel)
-    loadModel(modelHash)
+
+    ESX.Streaming.RequestModel(modelHash)
 
     local coords = location.landmarkCoords
     local entity = CreateObject(modelHash, coords.x, coords.y, coords.z, false, false, false)
@@ -141,7 +127,8 @@ function ChristmasClientManager:SpawnLocation(locationData)
 
   if Config.UseHints and location.hintModel and location.landmarkCoords then
     local hintModelHash = GetHashKey(location.hintModel)
-    loadModel(hintModelHash)
+
+    ESX.Streaming.RequestModel(hintModelHash)
 
     local coords = location.landmarkCoords
     local hintEntity = CreateObject(hintModelHash, coords.x + 2.0, coords.y, coords.z, false, false, false)
@@ -176,7 +163,8 @@ function ChristmasClientManager:SpawnLocation(locationData)
     local entity = 0
 
     if modelHash ~= 0 then
-      loadModel(modelHash)
+      ESX.Streaming.RequestModel(modelHash)
+      
       entity = CreateObject(modelHash, coords.x, coords.y, coords.z, false, false, false)
       FreezeEntityPosition(entity, true)
       SetModelAsNoLongerNeeded(modelHash)
