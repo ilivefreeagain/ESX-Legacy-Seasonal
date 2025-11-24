@@ -1,7 +1,5 @@
 ---@module 'esx_christmas.server.module.christmas.class'
 
-local Config = require("config.main")
-
 ---@class ChristmasPresentState
 ---@field coords vector3
 ---@field claimed boolean

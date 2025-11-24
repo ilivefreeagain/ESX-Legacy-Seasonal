@@ -1,4 +1,3 @@
-local Config = require("config.main")
 local ChristmasClientManager = require("client.module.christmas.class")
 
 ---@type ChristmasClientManager

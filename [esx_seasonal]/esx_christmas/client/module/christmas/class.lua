@@ -1,7 +1,5 @@
 ---@module 'esx_christmas.client.module.christmas.class'
 
-local Config = require("config.main")
-
 ---@class EsxPoint
 ---@field currDistance number
 ---@field delete fun(self: EsxPoint)

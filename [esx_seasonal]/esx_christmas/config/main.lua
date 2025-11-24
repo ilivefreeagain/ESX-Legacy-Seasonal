@@ -51,7 +51,7 @@
 
 ---@type ChristmasEventConfig
 ---@diagnostic disable-next-line: missing-fields
-local Config = {}
+Config = {}
 
 Config.Enabled = true
 Config.Debug = true
@@ -155,5 +155,3 @@ Config.Hints = {
   ["sp_christmas_snowman"] = "xmas_hint_snowman",
   ["sp_christmas_deer"] = "xmas_hint_deer"
 }
-
-return Config

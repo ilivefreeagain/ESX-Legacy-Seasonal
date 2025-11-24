@@ -9,6 +9,7 @@ author 'ESX Team'
 version '1.0.0'
 
 shared_scripts {
+  'config/main.lua',
   '@es_extended/imports.lua',
   '@es_extended/locale.lua',
   'locales/*.lua',
@@ -23,7 +24,6 @@ server_scripts {
 }
 
 files {
-  'config/main.lua',
   'client/module/christmas/class.lua',
   'server/module/christmas/class.lua',
   'stream/*',

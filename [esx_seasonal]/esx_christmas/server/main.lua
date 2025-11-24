@@ -1,4 +1,3 @@
-local Config = require("config.main")
 local ChristmasEvent = require("server.module.christmas.class")
 
 ---@type ChristmasEvent
