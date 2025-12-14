@@ -54,14 +54,14 @@
 Config = {}
 
 Config.Enabled = true
-Config.Debug = true
+Config.Debug = false
 
-Config.EventInterval = 10 * 60
+Config.EventInterval = 15 * 60
 
-Config.MaxLocationsPerCycle = 1
+Config.MaxLocationsPerCycle = 2
 Config.UseRandomLocation = true
 
-Config.GlobalMaxClaims = 20
+Config.GlobalMaxClaims = 25
 Config.PerPlayerMaxClaimsPerCycle = 3
 
 Config.UseTierScaling = true
@@ -73,7 +73,7 @@ Config.DespawnLocationOnCycleEnd = true
 
 Config.UseHints = true
 
-Config.Account = "bank"
+Config.Account = "cash"
 
 Config.MinClaimInterval = 2
 Config.MaxViolations = 5
@@ -86,13 +86,69 @@ Config.Locations = {
   {
     Name = "Legion Square",
     LandmarkCoords = vec3(203.525284, -941.169250, 29.678345),
-    LandmarkModel = nil,
+    LandmarkModel = "sp_large_christmas_santa",
     PresentCoords = {
       vec3(199.437363, -935.485718, 29.678345),
       vec3(199.318680, -953.432983, 29.088623),
       vec3(175.002197, -950.268127, 29.088623),
+      vec3(185.234567, -945.123456, 29.345678),
     },
     HintModel = "sp_christmas_snowman"
+  },
+  {
+    Name = "Pillbox Hill Medical Center",
+    LandmarkCoords = vec3(298.50, -584.50, 43.26),
+    LandmarkModel = "prop_xmas_tree_int",
+    PresentCoords = {
+      vec3(295.12, -587.23, 43.18),
+      vec3(301.45, -581.89, 43.18),
+      vec3(302.78, -590.12, 43.18),
+    },
+    HintModel = "sp_christmas_deer"
+  },
+  {
+    Name = "Del Perro Pier",
+    LandmarkCoords = vec3(-1686.30, -1072.50, 13.15),
+    LandmarkModel = "sp_medium_christmas_santa",
+    PresentCoords = {
+      vec3(-1682.45, -1070.23, 13.15),
+      vec3(-1690.12, -1075.67, 13.15),
+      vec3(-1688.89, -1068.34, 13.15),
+    },
+    HintModel = "sp_christmas_snowman"
+  },
+  {
+    Name = "Vinewood Boulevard",
+    LandmarkCoords = vec3(213.45, 123.67, 102.76),
+    LandmarkModel = "sp_candycane",
+    PresentCoords = {
+      vec3(210.23, 125.34, 102.76),
+      vec3(216.78, 121.45, 102.76),
+      vec3(215.12, 126.89, 102.76),
+    },
+    HintModel = "sp_christmas_deer"
+  },
+  {
+    Name = "Sandy Shores",
+    LandmarkCoords = vec3(1961.23, 3740.45, 32.34),
+    LandmarkModel = "prop_xmas_tree_int",
+    PresentCoords = {
+      vec3(1958.67, 3738.12, 32.34),
+      vec3(1963.45, 3742.89, 32.34),
+      vec3(1959.89, 3743.56, 32.34),
+    },
+    HintModel = "sp_christmas_snowman"
+  },
+  {
+    Name = "Paleto Bay",
+    LandmarkCoords = vec3(-278.45, 6230.12, 31.70),
+    LandmarkModel = "sp_large_christmas_santa",
+    PresentCoords = {
+      vec3(-275.23, 6227.89, 31.70),
+      vec3(-281.67, 6232.45, 31.70),
+      vec3(-280.12, 6228.34, 31.70),
+    },
+    HintModel = "sp_christmas_deer"
   }
 }
 
@@ -127,26 +183,34 @@ Config.Tiers = {
     Name = "Legendary",
     ClaimOrder = { 1 },
     Rewards = {
-      { Type = "cash", Amount = 10000 },
-      { Type = "item", Name = "armor",            Amount = 1 },
-      { Type = "item", Name = "christmas_ticket", Amount = 1 }
+      { Type = "cash", Amount = 20000 },
+      { Type = "item", Name = "bread",            Amount = 8 },
+      { Type = "item", Name = "water",            Amount = 8 }
     }
   },
   {
     Name = "Epic",
     ClaimOrder = { 2 },
     Rewards = {
+      { Type = "cash", Amount = 10000 },
+      { Type = "item", Name = "bread",            Amount = 5 },
+      { Type = "item", Name = "water",            Amount = 5 }
+    }
+  },
+  {
+    Name = "Rare",
+    ClaimOrder = { 3 },
+    Rewards = {
       { Type = "cash", Amount = 5000 },
-      { Type = "item", Name = "steel",            Amount = 1 },
-      { Type = "item", Name = "christmas_cookie", Amount = 2 }
+      { Type = "item", Name = "bread",            Amount = 3 },
+      { Type = "item", Name = "water",            Amount = 3 }
     }
   },
   {
     Name = "Common",
-    ClaimOrder = { 3 },
+    ClaimOrder = { 4, 5, 6, 7, 8, 9, 10 },
     Rewards = {
-      { Type = "cash", Amount = 1000 },
-      { Type = "item", Name = "hot_chocolate", Amount = 1 }
+      { Type = "cash", Amount = 2500 }
     }
   }
 }

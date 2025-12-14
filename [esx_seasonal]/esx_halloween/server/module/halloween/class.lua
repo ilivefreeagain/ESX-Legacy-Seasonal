@@ -1,31 +1,31 @@
----@module "esx_christmas.server.module.christmas.class"
+---@module "esx_halloween.server.module.halloween.class"
 ---@diagnostic disable: return-type-mismatch, param-type-mismatch
 
----@class ChristmasPresentState
+---@class HalloweenTreatState
 ---@field coords vector3
 ---@field claimed boolean
 
----@class ChristmasActiveLocation
+---@class HalloweenActiveLocation
 ---@field id integer
----@field config ChristmasLocation
+---@field config HalloweenLocation
 ---@field claimCount integer
 ---@field maxClaims integer
----@field presents ChristmasPresentState[]
+---@field treats HalloweenTreatState[]
 
----@class ChristmasEventState
----@field locations table<integer, ChristmasActiveLocation>
+---@class HalloweenEventState
+---@field locations table<integer, HalloweenActiveLocation>
 ---@field globalClaimCount integer
 ---@field perPlayerClaims table<string, integer>
 
----@class ChristmasAnticheatState
+---@class HalloweenAnticheatState
 ---@field lastClaimTime table<string, number>
 ---@field lastSyncTime table<string, number>
 ---@field violationCount table<string, integer>
 
----@class ChristmasEvent
----@field private _state ChristmasEventState
----@field private _ac ChristmasAnticheatState
-local ChristmasEvent = {
+---@class HalloweenEvent
+---@field private _state HalloweenEventState
+---@field private _ac HalloweenAnticheatState
+local HalloweenEvent = {
   _state = {
     locations = {},
     globalClaimCount = 0,
@@ -40,17 +40,17 @@ local ChristmasEvent = {
 
 ---@private
 ---@param message string
-function ChristmasEvent:_logDebug(message)
+function HalloweenEvent:_logDebug(message)
   if not Config.Debug then
     return
   end
 
-  print(("[ESX_Christmas] %s"):format(message))
+  print(("[ESX_Halloween] %s"):format(message))
 end
 
 ---@private
 ---@param identifier string
-function ChristmasEvent:_resetPlayerState(identifier)
+function HalloweenEvent:_resetPlayerState(identifier)
   self._ac.lastClaimTime[identifier] = 0
   self._ac.lastSyncTime[identifier] = 0
   self._ac.violationCount[identifier] = 0
@@ -61,38 +61,21 @@ end
 ---@param source integer
 ---@param identifier string
 ---@param reason string
-function ChristmasEvent:_registerViolation(source, identifier, reason)
+function HalloweenEvent:_registerViolation(source, identifier, reason)
   self:_logDebug(("AC violation by %d (%s): %s"):format(source, identifier, reason))
 
   local count = (self._ac.violationCount[identifier] or 0) + 1
   self._ac.violationCount[identifier] = count
 
   if Config.KickOnMaxViolations and Config.MaxViolations > 0 and count >= Config.MaxViolations then
-    DropPlayer(tostring(source), "[esx_christmas] Kicked: suspicious behaviour in Christmas event.")
+    DropPlayer(tostring(source), "[esx_halloween] Kicked: suspicious behaviour in Halloween event.")
   end
-end
-
----@private
----@param locationConfig ChristmasLocation
----@return string|nil
-function ChristmasEvent:_getLandmarkModel(locationConfig)
-  if locationConfig.LandmarkModel and locationConfig.LandmarkModel ~= "" then
-    return locationConfig.LandmarkModel
-  end
-
-  local models = Config.Props.LandmarkModels
-  if not models or #models == 0 then
-    return nil
-  end
-
-  local index = math.random(1, #models)
-  return models[index]
 end
 
 ---@private
 ---@param claimOrder integer
----@return ChristmasTier|nil
-function ChristmasEvent:_getTierForClaim(claimOrder)
+---@return HalloweenTier|nil
+function HalloweenEvent:_getTierForClaim(claimOrder)
   if not Config.UseTierScaling then
     return nil
   end
@@ -110,9 +93,9 @@ end
 
 ---@private
 ---@param playerId integer
----@param rewards ChristmasTierReward[]
+---@param rewards HalloweenTierReward[]
 ---@return boolean success
-function ChristmasEvent:_giveRewards(playerId, rewards)
+function HalloweenEvent:_giveRewards(playerId, rewards)
   if not rewards or #rewards == 0 then
     return true
   end
@@ -138,7 +121,7 @@ function ChristmasEvent:_giveRewards(playerId, rewards)
         local canCarry = exports.ox_inventory:CanCarryItem(playerId, reward.Name, reward.Amount)
         if not canCarry then
           ---@diagnostic disable-next-line: undefined-global
-          TriggerClientEvent('esx:showNotification', playerId, TranslateCap('xmas_inventory_full'))
+          TriggerClientEvent('esx:showNotification', playerId, TranslateCap('halloween_inventory_full'))
           return false
         end
       end
@@ -172,7 +155,7 @@ end
 ---@private
 ---@param source integer
 ---@return string
-function ChristmasEvent:_getPlayerIdentifier(source)
+function HalloweenEvent:_getPlayerIdentifier(source)
   ---@diagnostic disable-next-line: undefined-field
   local identifier = ESX.GetIdentifier(source)
   if identifier then
@@ -184,37 +167,37 @@ function ChristmasEvent:_getPlayerIdentifier(source)
 end
 
 ---@private
-function ChristmasEvent:_clearAllLocations()
+function HalloweenEvent:_clearAllLocations()
   self._state.locations = {}
   self._state.globalClaimCount = 0
   self._state.perPlayerClaims = {}
 
-  TriggerClientEvent("esx_christmas:client:clearLocations", -1)
+  TriggerClientEvent("esx_halloween:client:clearLocations", -1)
 end
 
 ---@private
 ---@param id integer
----@param locationConfig ChristmasLocation
----@return ChristmasActiveLocation
-function ChristmasEvent:_buildActiveLocation(id, locationConfig)
-  ---@type ChristmasActiveLocation
+---@param locationConfig HalloweenLocation
+---@return HalloweenActiveLocation
+function HalloweenEvent:_buildActiveLocation(id, locationConfig)
+  ---@type HalloweenActiveLocation
   local activeLocation = {
     id = id,
     config = locationConfig,
     claimCount = 0,
     maxClaims = 0,
-    presents = {}
+    treats = {}
   }
 
-  activeLocation.maxClaims = #locationConfig.PresentCoords
+  activeLocation.maxClaims = #locationConfig.TreatCoords
 
-  for _, coords in ipairs(locationConfig.PresentCoords) do
-    ---@type ChristmasPresentState
-    local presentState = {
+  for _, coords in ipairs(locationConfig.TreatCoords) do
+    ---@type HalloweenTreatState
+    local treatState = {
       coords = coords,
       claimed = false
     }
-    activeLocation.presents[#activeLocation.presents + 1] = presentState
+    activeLocation.treats[#activeLocation.treats + 1] = treatState
   end
 
   return activeLocation
@@ -222,7 +205,7 @@ end
 
 ---@private
 ---@return table
-function ChristmasEvent:_buildPayload()
+function HalloweenEvent:_buildPayload()
   local payload = {}
 
   for _, activeLocation in pairs(self._state.locations) do
@@ -232,16 +215,14 @@ function ChristmasEvent:_buildPayload()
       id = activeLocation.id,
       name = locationConfig.Name,
       landmarkCoords = locationConfig.LandmarkCoords,
-      landmarkModel = self:_getLandmarkModel(locationConfig),
-      presents = {},
-      hintModel = locationConfig.HintModel
+      treats = {}
     }
 
-    for index, presentState in ipairs(activeLocation.presents) do
-      data.presents[#data.presents + 1] = {
+    for index, treatState in ipairs(activeLocation.treats) do
+      data.treats[#data.treats + 1] = {
         index = index,
-        coords = presentState.coords,
-        claimed = presentState.claimed
+        coords = treatState.coords,
+        claimed = treatState.claimed
       }
     end
 
@@ -252,18 +233,18 @@ function ChristmasEvent:_buildPayload()
 end
 
 ---@private
-function ChristmasEvent:_broadcastLocations()
+function HalloweenEvent:_broadcastLocations()
   local payload = self:_buildPayload()
   if #payload == 0 then
     return
   end
 
-  TriggerClientEvent("esx_christmas:client:setLocations", -1, payload)
+  TriggerClientEvent("esx_halloween:client:setLocations", -1, payload)
 end
 
-function ChristmasEvent:StartCycle()
+function HalloweenEvent:StartCycle()
   if not Config.Enabled then
-    self:_logDebug("Event disabled in config (xmas_event_disabled)")
+    self:_logDebug("Event disabled in config (halloween_event_disabled)")
     return
   end
 
@@ -272,7 +253,7 @@ function ChristmasEvent:StartCycle()
   end
 
   if #Config.Locations == 0 then
-    self:_logDebug("No locations configured (xmas_no_locations)")
+    self:_logDebug("No locations configured (halloween_no_locations)")
     return
   end
 
@@ -310,27 +291,27 @@ function ChristmasEvent:StartCycle()
   self:_broadcastLocations()
   
   -- Notify all players that event started
-  TriggerClientEvent("esx_christmas:client:notify", -1, 'xmas_event_started')
+  TriggerClientEvent("esx_halloween:client:notify", -1, 'halloween_event_started')
 end
 
 ---@param source integer
 ---@param locationId integer
----@param presentIndex integer
-function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
+---@param treatIndex integer
+function HalloweenEvent:HandleClaim(source, locationId, treatIndex)
   local activeLocation = self._state.locations[locationId]
   if not activeLocation then
     self:_logDebug(("Player %d tried to claim invalid location %s"):format(source, tostring(locationId)))
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_location_inactive')
+    TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_location_inactive')
     return
   end
 
-  if presentIndex < 1 or presentIndex > #activeLocation.presents then
-    self:_logDebug(("Player %d sent invalid presentIndex %d"):format(source, presentIndex))
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_present_invalid')
+  if treatIndex < 1 or treatIndex > #activeLocation.treats then
+    self:_logDebug(("Player %d sent invalid treatIndex %d"):format(source, treatIndex))
+    TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_treat_invalid')
     return
   end
 
-  local presentState = activeLocation.presents[presentIndex]
+  local treatState = activeLocation.treats[treatIndex]
   local identifier = self:_getPlayerIdentifier(source)
 
   if Config.MinClaimInterval and Config.MinClaimInterval > 0 then
@@ -338,7 +319,7 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
     local last = self._ac.lastClaimTime[identifier] or 0
     if now - last < Config.MinClaimInterval then
       self:_registerViolation(source, identifier, "claim cooldown violated")
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_too_fast')
+      TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_too_fast')
       return
     end
     self._ac.lastClaimTime[identifier] = now
@@ -347,21 +328,21 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
   local ped = GetPlayerPed(source)
   if ped ~= 0 and Config.MaxClaimDistance and Config.MaxClaimDistance > 0 then
     local pCoords = GetEntityCoords(ped)
-    local dist = #(pCoords - presentState.coords)
+    local dist = #(pCoords - treatState.coords)
     if dist > Config.MaxClaimDistance then
-      self:_registerViolation(source, identifier, ("too far from present (%.2f)"):format(dist))
+      self:_registerViolation(source, identifier, ("too far from treat (%.2f)"):format(dist))
       return
     end
   end
 
-  if presentState.claimed then
-    TriggerClientEvent("esx_christmas:client:presentAlreadyClaimed", source, locationId, presentIndex)
+  if treatState.claimed then
+    TriggerClientEvent("esx_halloween:client:treatAlreadyClaimed", source, locationId, treatIndex)
     return
   end
 
   if Config.GlobalMaxClaims and Config.GlobalMaxClaims > 0 then
     if self._state.globalClaimCount >= Config.GlobalMaxClaims then
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_all_presents_claimed')
+      TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_all_treats_claimed')
       return
     end
   end
@@ -369,17 +350,17 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
   if Config.PerPlayerMaxClaimsPerCycle and Config.PerPlayerMaxClaimsPerCycle > 0 then
     local playerGlobalClaims = self._state.perPlayerClaims[identifier] or 0
     if playerGlobalClaims >= Config.PerPlayerMaxClaimsPerCycle then
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_max_claims_reached')
+      TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_max_claims_reached')
       return
     end
   end
 
   if activeLocation.claimCount >= activeLocation.maxClaims then
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_location_empty')
+    TriggerClientEvent("esx_halloween:client:cannotClaim", source, 'halloween_location_empty')
     return
   end
 
-  presentState.claimed = true
+  treatState.claimed = true
   activeLocation.claimCount = activeLocation.claimCount + 1
   self._state.globalClaimCount = self._state.globalClaimCount + 1
   self._state.perPlayerClaims[identifier] = (self._state.perPlayerClaims[identifier] or 0) + 1
@@ -401,10 +382,10 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
   self:_giveRewards(source, rewards or {})
 
   TriggerClientEvent(
-    "esx_christmas:client:onClaim",
+    "esx_halloween:client:onClaim",
     -1,
     locationId,
-    presentIndex,
+    treatIndex,
     activeLocation.claimCount,
     activeLocation.maxClaims,
     tier and tier.Name or Config.DefaultTierName
@@ -412,22 +393,22 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
 
   local allClaimed = activeLocation.claimCount >= activeLocation.maxClaims
 
-  if Config.DespawnPresentOnClaim then
-    TriggerClientEvent("esx_christmas:client:despawnPresent", -1, locationId, presentIndex)
+  if Config.DespawnTreatOnClaim then
+    TriggerClientEvent("esx_halloween:client:despawnTreat", -1, locationId, treatIndex)
   end
 
   if allClaimed and Config.DespawnLocationWhenAllClaimed then
     self._state.locations[locationId] = nil
-    TriggerClientEvent("esx_christmas:client:removeLocation", -1, locationId)
+    TriggerClientEvent("esx_halloween:client:removeLocation", -1, locationId)
   end
 end
 
-function ChristmasEvent:Clear()
+function HalloweenEvent:Clear()
   self:_clearAllLocations()
 end
 
 ---@param target integer
-function ChristmasEvent:SyncToPlayer(target)
+function HalloweenEvent:SyncToPlayer(target)
   local identifier = self:_getPlayerIdentifier(target)
 
   if Config.MinClaimInterval and Config.MinClaimInterval > 0 then
@@ -445,8 +426,8 @@ function ChristmasEvent:SyncToPlayer(target)
     return
   end
 
-  TriggerClientEvent("esx_christmas:client:setLocations", target, payload)
+  TriggerClientEvent("esx_halloween:client:setLocations", target, payload)
 end
 
--- Make ChristmasEvent globally available
-_G.ChristmasEvent = ChristmasEvent
+-- Make HalloweenEvent globally available
+_G.HalloweenEvent = HalloweenEvent

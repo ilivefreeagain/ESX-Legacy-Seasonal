@@ -1,4 +1,4 @@
--- ChristmasEvent is loaded from server/module/christmas/class.lua
+-- EasterEvent is loaded from server/module/easter/class.lua
 -- and made available globally
 
 local isEnabled = true
@@ -11,26 +11,25 @@ CreateThread(function()
   while true do
     Wait(Config.EventInterval * 1000)
     if Config.Enabled and isEnabled then
-      ChristmasEvent:StartCycle()
+      EasterEvent:StartCycle()
     end
   end
 end)
 
-RegisterNetEvent("esx_christmas:server:claim", function(locationId, presentIndex)
+RegisterNetEvent("esx_easter:server:claim", function(locationId, eggIndex)
   local sourcePlayer = source
-  ChristmasEvent:HandleClaim(sourcePlayer, locationId, presentIndex)
+  EasterEvent:HandleClaim(sourcePlayer, locationId, eggIndex)
 end)
 
-RegisterNetEvent("esx_christmas:server:requestSync", function()
+RegisterNetEvent("esx_easter:server:requestSync", function()
   local sourcePlayer = source
-  ChristmasEvent:SyncToPlayer(sourcePlayer)
+  EasterEvent:SyncToPlayer(sourcePlayer)
 end)
 
--- Exports for seasonal manager
 exports('SetEnabled', function(enabled)
   isEnabled = enabled
   if not enabled then
-    ChristmasEvent:Clear()
+    EasterEvent:Clear()
   end
 end)
 
@@ -40,6 +39,6 @@ end)
 
 exports('StartCycle', function()
   if isEnabled and Config.Enabled then
-    ChristmasEvent:StartCycle()
+    EasterEvent:StartCycle()
   end
 end)

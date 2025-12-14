@@ -1,4 +1,4 @@
--- ChristmasEvent is loaded from server/module/christmas/class.lua
+-- HalloweenEvent is loaded from server/module/halloween/class.lua
 -- and made available globally
 
 local isEnabled = true
@@ -11,26 +11,25 @@ CreateThread(function()
   while true do
     Wait(Config.EventInterval * 1000)
     if Config.Enabled and isEnabled then
-      ChristmasEvent:StartCycle()
+      HalloweenEvent:StartCycle()
     end
   end
 end)
 
-RegisterNetEvent("esx_christmas:server:claim", function(locationId, presentIndex)
+RegisterNetEvent("esx_halloween:server:claim", function(locationId, treatIndex)
   local sourcePlayer = source
-  ChristmasEvent:HandleClaim(sourcePlayer, locationId, presentIndex)
+  HalloweenEvent:HandleClaim(sourcePlayer, locationId, treatIndex)
 end)
 
-RegisterNetEvent("esx_christmas:server:requestSync", function()
+RegisterNetEvent("esx_halloween:server:requestSync", function()
   local sourcePlayer = source
-  ChristmasEvent:SyncToPlayer(sourcePlayer)
+  HalloweenEvent:SyncToPlayer(sourcePlayer)
 end)
 
--- Exports for seasonal manager
 exports('SetEnabled', function(enabled)
   isEnabled = enabled
   if not enabled then
-    ChristmasEvent:Clear()
+    HalloweenEvent:Clear()
   end
 end)
 
@@ -40,6 +39,6 @@ end)
 
 exports('StartCycle', function()
   if isEnabled and Config.Enabled then
-    ChristmasEvent:StartCycle()
+    HalloweenEvent:StartCycle()
   end
 end)

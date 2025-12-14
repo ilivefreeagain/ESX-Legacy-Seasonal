@@ -1,4 +1,5 @@
----@module 'esx_christmas.client.module.christmas.class'
+---@module "esx_christmas.client.module.christmas.class"
+---@diagnostic disable: undefined-global
 
 ---@class EsxPoint
 ---@field currDistance number
@@ -115,7 +116,7 @@ function ChristmasClientManager:SpawnLocation(locationData)
   if location.landmarkCoords and location.landmarkModel and location.landmarkModel ~= "" then
     local modelHash = GetHashKey(location.landmarkModel)
 
-    ESX.Streaming.RequestModel(modelHash)
+    lib.requestModel(modelHash, 5000)
 
     local coords = location.landmarkCoords
     local entity = CreateObject(modelHash, coords.x, coords.y, coords.z, false, false, false)
@@ -128,7 +129,7 @@ function ChristmasClientManager:SpawnLocation(locationData)
   if Config.UseHints and location.hintModel and location.landmarkCoords then
     local hintModelHash = GetHashKey(location.hintModel)
 
-    ESX.Streaming.RequestModel(hintModelHash)
+    lib.requestModel(hintModelHash, 5000)
 
     local coords = location.landmarkCoords
     local hintEntity = CreateObject(hintModelHash, coords.x + 2.0, coords.y, coords.z, false, false, false)
@@ -140,13 +141,13 @@ function ChristmasClientManager:SpawnLocation(locationData)
     if location.hintTextKey then
       local hintCoords = vector3(coords.x + 2.0, coords.y, coords.z + 1.0)
 
-      ESX.Point:new({
+      lib.points.new({
         coords = hintCoords,
         distance = 10.0,
-        enter = function() end,
-        leave = function() end,
-        inside = function(pointInstance)
-          local distance = pointInstance.currDistance or 0.0
+        onEnter = function() end,
+        onExit = function() end,
+        nearby = function(self)
+          local distance = self.currentDistance or 0.0
           if distance <= 5.0 then
             ESX.ShowFloatingHelpNotification(TranslateCap(location.hintTextKey), hintCoords)
           end
@@ -163,7 +164,7 @@ function ChristmasClientManager:SpawnLocation(locationData)
     local entity = 0
 
     if modelHash ~= 0 then
-      ESX.Streaming.RequestModel(modelHash)
+      lib.requestModel(modelHash, 5000)
       
       entity = CreateObject(modelHash, coords.x, coords.y, coords.z, false, false, false)
       FreezeEntityPosition(entity, true)
@@ -180,16 +181,16 @@ function ChristmasClientManager:SpawnLocation(locationData)
       point = nil
     }
 
-    ---@type EsxPoint
-    local point = ESX.Point:new({
+    ---@type table
+    local point = lib.points.new({
       coords = coords,
       distance = 5.0,
-      enter = function() end,
-      leave = function()
+      onEnter = function() end,
+      onExit = function()
         ESX.ShowHelpNotification(" ", false, false, 1)
       end,
-      inside = function(pointInstance)
-        local distance = pointInstance.currDistance or 0.0
+      nearby = function(self)
+        local distance = self.currentDistance or 0.0
 
         if presentState.claimed or not presentState.canClaim then
           return
@@ -257,4 +258,5 @@ function ChristmasClientManager:DisablePresent(locationId, presentIndex)
   end
 end
 
-return ChristmasClientManager
+-- Make ChristmasClientManager globally available
+_G.ChristmasClientManager = ChristmasClientManager

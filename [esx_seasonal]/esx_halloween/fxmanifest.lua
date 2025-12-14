@@ -3,8 +3,8 @@ game 'gta5'
 lua54 'yes'
 use_fxv2_oal 'yes'
 
-name 'esx_christmas'
-description 'Christmas Present Hunt event for ESX Legacy'
+name 'esx_halloween'
+description 'Halloween Trick or Treat event for ESX Legacy'
 author 'ESX Team'
 version '1.0.0'
 
@@ -18,21 +18,13 @@ shared_scripts {
 
 client_scripts {
   'client/main.lua',
-  'client/module/christmas/class.lua'
+  'client/module/halloween/class.lua'
 }
 
 server_scripts {
   'server/main.lua',
-  'server/module/christmas/class.lua'
+  'server/module/halloween/class.lua'
 }
-
-files {
-  'stream/*'
-}
-
-this_is_a_map 'yes'
-
-data_file 'DLC_ITYP_REQUEST' 'stream/sp_christmas_prop.ytyp'
 
 dependencies {
   'es_extended',

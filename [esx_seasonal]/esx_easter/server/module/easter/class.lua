@@ -1,31 +1,31 @@
----@module "esx_christmas.server.module.christmas.class"
+---@module "esx_easter.server.module.easter.class"
 ---@diagnostic disable: return-type-mismatch, param-type-mismatch
 
----@class ChristmasPresentState
+---@class EasterEggState
 ---@field coords vector3
 ---@field claimed boolean
 
----@class ChristmasActiveLocation
+---@class EasterActiveLocation
 ---@field id integer
----@field config ChristmasLocation
+---@field config EasterLocation
 ---@field claimCount integer
 ---@field maxClaims integer
----@field presents ChristmasPresentState[]
+---@field eggs EasterEggState[]
 
----@class ChristmasEventState
----@field locations table<integer, ChristmasActiveLocation>
+---@class EasterEventState
+---@field locations table<integer, EasterActiveLocation>
 ---@field globalClaimCount integer
 ---@field perPlayerClaims table<string, integer>
 
----@class ChristmasAnticheatState
+---@class EasterAnticheatState
 ---@field lastClaimTime table<string, number>
 ---@field lastSyncTime table<string, number>
 ---@field violationCount table<string, integer>
 
----@class ChristmasEvent
----@field private _state ChristmasEventState
----@field private _ac ChristmasAnticheatState
-local ChristmasEvent = {
+---@class EasterEvent
+---@field private _state EasterEventState
+---@field private _ac EasterAnticheatState
+local EasterEvent = {
   _state = {
     locations = {},
     globalClaimCount = 0,
@@ -40,59 +40,33 @@ local ChristmasEvent = {
 
 ---@private
 ---@param message string
-function ChristmasEvent:_logDebug(message)
+function EasterEvent:_logDebug(message)
   if not Config.Debug then
     return
   end
 
-  print(("[ESX_Christmas] %s"):format(message))
-end
-
----@private
----@param identifier string
-function ChristmasEvent:_resetPlayerState(identifier)
-  self._ac.lastClaimTime[identifier] = 0
-  self._ac.lastSyncTime[identifier] = 0
-  self._ac.violationCount[identifier] = 0
-  self._state.perPlayerClaims[identifier] = 0
+  print(("[ESX_Easter] %s"):format(message))
 end
 
 ---@private
 ---@param source integer
 ---@param identifier string
 ---@param reason string
-function ChristmasEvent:_registerViolation(source, identifier, reason)
+function EasterEvent:_registerViolation(source, identifier, reason)
   self:_logDebug(("AC violation by %d (%s): %s"):format(source, identifier, reason))
 
   local count = (self._ac.violationCount[identifier] or 0) + 1
   self._ac.violationCount[identifier] = count
 
   if Config.KickOnMaxViolations and Config.MaxViolations > 0 and count >= Config.MaxViolations then
-    DropPlayer(tostring(source), "[esx_christmas] Kicked: suspicious behaviour in Christmas event.")
+    DropPlayer(tostring(source), "[esx_easter] Kicked: suspicious behaviour in Easter event.")
   end
-end
-
----@private
----@param locationConfig ChristmasLocation
----@return string|nil
-function ChristmasEvent:_getLandmarkModel(locationConfig)
-  if locationConfig.LandmarkModel and locationConfig.LandmarkModel ~= "" then
-    return locationConfig.LandmarkModel
-  end
-
-  local models = Config.Props.LandmarkModels
-  if not models or #models == 0 then
-    return nil
-  end
-
-  local index = math.random(1, #models)
-  return models[index]
 end
 
 ---@private
 ---@param claimOrder integer
----@return ChristmasTier|nil
-function ChristmasEvent:_getTierForClaim(claimOrder)
+---@return EasterTier|nil
+function EasterEvent:_getTierForClaim(claimOrder)
   if not Config.UseTierScaling then
     return nil
   end
@@ -110,21 +84,15 @@ end
 
 ---@private
 ---@param playerId integer
----@param rewards ChristmasTierReward[]
+---@param rewards EasterTierReward[]
 ---@return boolean success
-function ChristmasEvent:_giveRewards(playerId, rewards)
+function EasterEvent:_giveRewards(playerId, rewards)
   if not rewards or #rewards == 0 then
     return true
   end
 
-  if not ESX or not ESX.GetPlayerFromId then
-    self:_logDebug("ESX or ESX.GetPlayerFromId not available, cannot give rewards")
-    return false
-  end
-
   local xPlayer = ESX.GetPlayerFromId(playerId)
   if not xPlayer then
-    self:_logDebug(("xPlayer not found for id %d"):format(playerId))
     return false
   end
 
@@ -138,7 +106,7 @@ function ChristmasEvent:_giveRewards(playerId, rewards)
         local canCarry = exports.ox_inventory:CanCarryItem(playerId, reward.Name, reward.Amount)
         if not canCarry then
           ---@diagnostic disable-next-line: undefined-global
-          TriggerClientEvent('esx:showNotification', playerId, TranslateCap('xmas_inventory_full'))
+          TriggerClientEvent('esx:showNotification', playerId, TranslateCap('easter_inventory_full'))
           return false
         end
       end
@@ -157,7 +125,6 @@ function ChristmasEvent:_giveRewards(playerId, rewards)
       if useOxInventory then
         local success = exports.ox_inventory:AddItem(playerId, reward.Name, reward.Amount)
         if not success then
-          self:_logDebug(("Failed to add item %s to player %d"):format(reward.Name, playerId))
           return false
         end
       else
@@ -172,7 +139,7 @@ end
 ---@private
 ---@param source integer
 ---@return string
-function ChristmasEvent:_getPlayerIdentifier(source)
+function EasterEvent:_getPlayerIdentifier(source)
   ---@diagnostic disable-next-line: undefined-field
   local identifier = ESX.GetIdentifier(source)
   if identifier then
@@ -184,37 +151,35 @@ function ChristmasEvent:_getPlayerIdentifier(source)
 end
 
 ---@private
-function ChristmasEvent:_clearAllLocations()
+function EasterEvent:_clearAllLocations()
   self._state.locations = {}
   self._state.globalClaimCount = 0
   self._state.perPlayerClaims = {}
 
-  TriggerClientEvent("esx_christmas:client:clearLocations", -1)
+  TriggerClientEvent("esx_easter:client:clearLocations", -1)
 end
 
 ---@private
 ---@param id integer
----@param locationConfig ChristmasLocation
----@return ChristmasActiveLocation
-function ChristmasEvent:_buildActiveLocation(id, locationConfig)
-  ---@type ChristmasActiveLocation
+---@param locationConfig EasterLocation
+---@return EasterActiveLocation
+function EasterEvent:_buildActiveLocation(id, locationConfig)
+  ---@type EasterActiveLocation
   local activeLocation = {
     id = id,
     config = locationConfig,
     claimCount = 0,
-    maxClaims = 0,
-    presents = {}
+    maxClaims = #locationConfig.EggCoords,
+    eggs = {}
   }
 
-  activeLocation.maxClaims = #locationConfig.PresentCoords
-
-  for _, coords in ipairs(locationConfig.PresentCoords) do
-    ---@type ChristmasPresentState
-    local presentState = {
+  for _, coords in ipairs(locationConfig.EggCoords) do
+    ---@type EasterEggState
+    local eggState = {
       coords = coords,
       claimed = false
     }
-    activeLocation.presents[#activeLocation.presents + 1] = presentState
+    activeLocation.eggs[#activeLocation.eggs + 1] = eggState
   end
 
   return activeLocation
@@ -222,7 +187,7 @@ end
 
 ---@private
 ---@return table
-function ChristmasEvent:_buildPayload()
+function EasterEvent:_buildPayload()
   local payload = {}
 
   for _, activeLocation in pairs(self._state.locations) do
@@ -232,16 +197,14 @@ function ChristmasEvent:_buildPayload()
       id = activeLocation.id,
       name = locationConfig.Name,
       landmarkCoords = locationConfig.LandmarkCoords,
-      landmarkModel = self:_getLandmarkModel(locationConfig),
-      presents = {},
-      hintModel = locationConfig.HintModel
+      eggs = {}
     }
 
-    for index, presentState in ipairs(activeLocation.presents) do
-      data.presents[#data.presents + 1] = {
+    for index, eggState in ipairs(activeLocation.eggs) do
+      data.eggs[#data.eggs + 1] = {
         index = index,
-        coords = presentState.coords,
-        claimed = presentState.claimed
+        coords = eggState.coords,
+        claimed = eggState.claimed
       }
     end
 
@@ -252,18 +215,17 @@ function ChristmasEvent:_buildPayload()
 end
 
 ---@private
-function ChristmasEvent:_broadcastLocations()
+function EasterEvent:_broadcastLocations()
   local payload = self:_buildPayload()
   if #payload == 0 then
     return
   end
 
-  TriggerClientEvent("esx_christmas:client:setLocations", -1, payload)
+  TriggerClientEvent("esx_easter:client:setLocations", -1, payload)
 end
 
-function ChristmasEvent:StartCycle()
+function EasterEvent:StartCycle()
   if not Config.Enabled then
-    self:_logDebug("Event disabled in config (xmas_event_disabled)")
     return
   end
 
@@ -272,17 +234,13 @@ function ChristmasEvent:StartCycle()
   end
 
   if #Config.Locations == 0 then
-    self:_logDebug("No locations configured (xmas_no_locations)")
     return
   end
 
   local chosenIndices = {}
 
   if Config.MaxLocationsPerCycle <= 1 or #Config.Locations == 1 then
-    local chosenIndex = 1
-    if Config.UseRandomLocation then
-      chosenIndex = math.random(1, #Config.Locations)
-    end
+    local chosenIndex = Config.UseRandomLocation and math.random(1, #Config.Locations) or 1
     table.insert(chosenIndices, chosenIndex)
   else
     local available = {}
@@ -304,82 +262,70 @@ function ChristmasEvent:StartCycle()
     local chosenConfig = Config.Locations[index]
     local activeLocation = self:_buildActiveLocation(index, chosenConfig)
     self._state.locations[activeLocation.id] = activeLocation
-    self:_logDebug(("New event cycle started at location '%s'"):format(chosenConfig.Name))
   end
 
   self:_broadcastLocations()
-  
-  -- Notify all players that event started
-  TriggerClientEvent("esx_christmas:client:notify", -1, 'xmas_event_started')
+  TriggerClientEvent("esx_easter:client:notify", -1, 'easter_event_started')
 end
 
 ---@param source integer
 ---@param locationId integer
----@param presentIndex integer
-function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
+---@param eggIndex integer
+function EasterEvent:HandleClaim(source, locationId, eggIndex)
   local activeLocation = self._state.locations[locationId]
   if not activeLocation then
-    self:_logDebug(("Player %d tried to claim invalid location %s"):format(source, tostring(locationId)))
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_location_inactive')
+    TriggerClientEvent("esx_easter:client:cannotClaim", source, 'easter_location_inactive')
     return
   end
 
-  if presentIndex < 1 or presentIndex > #activeLocation.presents then
-    self:_logDebug(("Player %d sent invalid presentIndex %d"):format(source, presentIndex))
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_present_invalid')
+  if eggIndex < 1 or eggIndex > #activeLocation.eggs then
+    TriggerClientEvent("esx_easter:client:cannotClaim", source, 'easter_egg_invalid')
     return
   end
 
-  local presentState = activeLocation.presents[presentIndex]
+  local eggState = activeLocation.eggs[eggIndex]
   local identifier = self:_getPlayerIdentifier(source)
 
-  if Config.MinClaimInterval and Config.MinClaimInterval > 0 then
+  if Config.MinClaimInterval > 0 then
     local now = os.time()
     local last = self._ac.lastClaimTime[identifier] or 0
     if now - last < Config.MinClaimInterval then
       self:_registerViolation(source, identifier, "claim cooldown violated")
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_too_fast')
+      TriggerClientEvent("esx_easter:client:cannotClaim", source, 'easter_too_fast')
       return
     end
     self._ac.lastClaimTime[identifier] = now
   end
 
   local ped = GetPlayerPed(source)
-  if ped ~= 0 and Config.MaxClaimDistance and Config.MaxClaimDistance > 0 then
+  if ped ~= 0 and Config.MaxClaimDistance > 0 then
     local pCoords = GetEntityCoords(ped)
-    local dist = #(pCoords - presentState.coords)
+    local dist = #(pCoords - eggState.coords)
     if dist > Config.MaxClaimDistance then
-      self:_registerViolation(source, identifier, ("too far from present (%.2f)"):format(dist))
+      self:_registerViolation(source, identifier, ("too far from egg (%.2f)"):format(dist))
       return
     end
   end
 
-  if presentState.claimed then
-    TriggerClientEvent("esx_christmas:client:presentAlreadyClaimed", source, locationId, presentIndex)
+  if eggState.claimed then
+    TriggerClientEvent("esx_easter:client:eggAlreadyClaimed", source, locationId, eggIndex)
     return
   end
 
-  if Config.GlobalMaxClaims and Config.GlobalMaxClaims > 0 then
-    if self._state.globalClaimCount >= Config.GlobalMaxClaims then
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_all_presents_claimed')
-      return
-    end
-  end
-
-  if Config.PerPlayerMaxClaimsPerCycle and Config.PerPlayerMaxClaimsPerCycle > 0 then
-    local playerGlobalClaims = self._state.perPlayerClaims[identifier] or 0
-    if playerGlobalClaims >= Config.PerPlayerMaxClaimsPerCycle then
-      TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_max_claims_reached')
-      return
-    end
-  end
-
-  if activeLocation.claimCount >= activeLocation.maxClaims then
-    TriggerClientEvent("esx_christmas:client:cannotClaim", source, 'xmas_location_empty')
+  if Config.GlobalMaxClaims > 0 and self._state.globalClaimCount >= Config.GlobalMaxClaims then
+    TriggerClientEvent("esx_easter:client:cannotClaim", source, 'easter_all_eggs_claimed')
     return
   end
 
-  presentState.claimed = true
+  if Config.PerPlayerMaxClaimsPerCycle > 0 then
+    local playerClaims = self._state.perPlayerClaims[identifier] or 0
+    if playerClaims >= Config.PerPlayerMaxClaimsPerCycle then
+      TriggerClientEvent("esx_easter:client:cannotClaim", source, 'easter_max_claims_reached')
+      return
+    end
+  end
+
+  eggState.claimed = true
   activeLocation.claimCount = activeLocation.claimCount + 1
   self._state.globalClaimCount = self._state.globalClaimCount + 1
   self._state.perPlayerClaims[identifier] = (self._state.perPlayerClaims[identifier] or 0) + 1
@@ -401,36 +347,29 @@ function ChristmasEvent:HandleClaim(source, locationId, presentIndex)
   self:_giveRewards(source, rewards or {})
 
   TriggerClientEvent(
-    "esx_christmas:client:onClaim",
+    "esx_easter:client:onClaim",
     -1,
     locationId,
-    presentIndex,
+    eggIndex,
     activeLocation.claimCount,
     activeLocation.maxClaims,
     tier and tier.Name or Config.DefaultTierName
   )
 
-  local allClaimed = activeLocation.claimCount >= activeLocation.maxClaims
-
-  if Config.DespawnPresentOnClaim then
-    TriggerClientEvent("esx_christmas:client:despawnPresent", -1, locationId, presentIndex)
+  if Config.DespawnEggOnClaim then
+    TriggerClientEvent("esx_easter:client:despawnEgg", -1, locationId, eggIndex)
   end
 
-  if allClaimed and Config.DespawnLocationWhenAllClaimed then
+  if activeLocation.claimCount >= activeLocation.maxClaims and Config.DespawnLocationWhenAllClaimed then
     self._state.locations[locationId] = nil
-    TriggerClientEvent("esx_christmas:client:removeLocation", -1, locationId)
+    TriggerClientEvent("esx_easter:client:removeLocation", -1, locationId)
   end
 end
 
-function ChristmasEvent:Clear()
-  self:_clearAllLocations()
-end
-
----@param target integer
-function ChristmasEvent:SyncToPlayer(target)
+function EasterEvent:SyncToPlayer(target)
   local identifier = self:_getPlayerIdentifier(target)
 
-  if Config.MinClaimInterval and Config.MinClaimInterval > 0 then
+  if Config.MinClaimInterval > 0 then
     local now = os.time()
     local last = self._ac.lastSyncTime[identifier] or 0
     if now - last < Config.MinClaimInterval then
@@ -445,8 +384,14 @@ function ChristmasEvent:SyncToPlayer(target)
     return
   end
 
-  TriggerClientEvent("esx_christmas:client:setLocations", target, payload)
+  TriggerClientEvent("esx_easter:client:setLocations", target, payload)
 end
 
--- Make ChristmasEvent globally available
-_G.ChristmasEvent = ChristmasEvent
+---Public method to clear all locations (for seasonal manager)
+function EasterEvent:Clear()
+  self:_clearAllLocations()
+  TriggerClientEvent("esx_easter:client:setLocations", -1, {})
+end
+
+-- Make EasterEvent globally available
+_G.EasterEvent = EasterEvent

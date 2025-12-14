@@ -1,4 +1,6 @@
-local Manager = require("client.module.christmas.class")
+---@diagnostic disable: undefined-global
+-- ChristmasClientManager is loaded from client/module/christmas/class.lua
+-- and made available globally
 
 CreateThread(function()
   while not ESX or not ESX.IsPlayerLoaded() do
@@ -9,23 +11,23 @@ CreateThread(function()
 end)
 
 RegisterNetEvent("esx_christmas:client:setLocations", function(locations)
-  Manager:ClearAll()
+  ChristmasClientManager:ClearAll()
 
   for _, locationData in ipairs(locations) do
-    Manager:SpawnLocation(locationData)
+    ChristmasClientManager:SpawnLocation(locationData)
   end
 end)
 
 RegisterNetEvent("esx_christmas:client:removeLocation", function(locationId)
-  Manager:RemoveLocation(locationId)
+  ChristmasClientManager:RemoveLocation(locationId)
 end)
 
 RegisterNetEvent("esx_christmas:client:clearLocations", function()
-  Manager:ClearAll()
+  ChristmasClientManager:ClearAll()
 end)
 
 RegisterNetEvent("esx_christmas:client:despawnPresent", function(locationId, presentIndex)
-  Manager:DespawnPresent(locationId, presentIndex)
+  ChristmasClientManager:DespawnPresent(locationId, presentIndex)
 end)
 
 RegisterNetEvent("esx_christmas:client:onClaim", function(locationId, presentIndex, claimCount, maxClaims, tierName)
@@ -38,7 +40,7 @@ RegisterNetEvent("esx_christmas:client:notify", function(messageKey, ...)
 end)
 
 RegisterNetEvent("esx_christmas:client:presentAlreadyClaimed", function(locationId, presentIndex)
-  Manager:DisablePresent(locationId, presentIndex)
+  ChristmasClientManager:DisablePresent(locationId, presentIndex)
   ESX.ShowNotification(TranslateCap('xmas_present_already_opened'))
 end)
 
