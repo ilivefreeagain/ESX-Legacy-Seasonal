@@ -324,9 +324,7 @@ For issues and feature requests, check your server logs and configuration first.
 ## 📚 Additional Documentation
 
 - [SETUP_GUIDE.md](SETUP_GUIDE.md) - Detailed installation and configuration guide
-- [OX_INVENTORY_COMPATIBILITY.md](OX_INVENTORY_COMPATIBILITY.md) - ox_inventory integration details
-- [OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md) - Performance analysis and testing results
-- [IMPROVEMENTS.md](IMPROVEMENTS.md) - Changelog and improvements log
+
 
 ---
 
